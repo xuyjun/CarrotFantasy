@@ -73,13 +73,13 @@ StageScene = class("StageScene", function()
 end)
 
 StageScene.__index = StageScene
+StageScene._clearAward = 0
 StageScene._moneyLabel = nil
 StageScene._curWave = nil
-StageScene._totalWave = nil
 StageScene._gameMenu = nil
 StageScene._dataModel = nil
 
-function StageScene:ctor()
+function StageScene:ctor(stageData)
     cc.SpriteFrameCache:getInstance():addSpriteFrames(s_item00)
     cc.SpriteFrameCache:getInstance():addSpriteFrames(s_item01)
     cc.SpriteFrameCache:getInstance():addSpriteFrames(s_item02)
@@ -93,6 +93,7 @@ function StageScene:ctor()
     cc.SpriteFrameCache:getInstance():addSpriteFrames(s_TFan)
     cc.SpriteFrameCache:getInstance():addSpriteFrames(s_TStar)
 
+    -- self._clearAward = stageData.CLEAR_AWARD
     self._dataModel = StageModel:getInstance()
     self._dataModel:addObserver(self)
 
@@ -115,6 +116,7 @@ function StageScene:ctor()
     curWave:setPosition(cc.p(28, 29))
     waveLabel:addChild(curWave)
 
+    -- local str = stageData.TOTAL_WAVE < 10 and ("0" .. stageData.TOTAL_WAVE) or ("" .. stageData.TOTAL_WAVE)
     local totalWave = cc.LabelAtlas:_create(0, s_white_num, 20, 40, string.byte("."))
     totalWave:setPosition(cc.p(140, 30))
     waveLabel:addChild(totalWave)
@@ -164,7 +166,6 @@ function StageScene:ctor()
 
     self._moneyLabel = moneyLabel
     self._curWave = curWave
-    self._totalWave = totalWave
     self._gameMenu = gameMenu
 
     local gameState = CF.GAME_STATE.PLAYING
@@ -208,6 +209,7 @@ function StageScene:updateDataMsg(msg)
     if msg == "money" then
         self._moneyLabel:setString(self._dataModel:getMoney())
     elseif msg == "object" then
+        self._dataModel:setMoney(self._dataModel:getMoney() + self._clearAward)
         local clear = cc.Sprite:createWithSpriteFrameName("targetscleard_CN.png")
         clear:setPosition(cc.p(center.x, -44))
         clear:runAction(cc.Sequence:create(
@@ -224,9 +226,7 @@ function StageScene:updateCurWaveLabel(number)
     self._curWave:setString(str)
 end
 
-function StageScene:updateTotalWaveLabel(number)
-    local str = number < 10 and ("0" .. number) or ("" .. number)
-    self._totalWave:setString(str)
+function StageScene:gameStart()
 end
 
 function createTestScene()

@@ -1,106 +1,131 @@
-function createSliderLayer(array, distance)
-	local layer = cc.Layer:create()
-	velocity = 2000
+SliderLayer = class("SliderLayer", function()
+	return cc.Layer:create()
+end)
 
-	layer.total = table.getn(array)
-	layer.curIndex = 0
-	layer.listSize = array[1]:getContentSize()
-	
-	layer.list = cc.Layer:create()
-	for i, obj in pairs(array) do
-		local x, y = obj:getPosition()
-        obj:setPosition(cc.p(x + distance * (i - 1), y))
-        layer.list:addChild(obj, 1, i - 1)
-	end
-	layer:addChild(layer.list)
+SliderLayer._velocity = 0
+SliderLayer._total = 0
+SliderLayer._curIndex = 0
+SliderLayer._distance = 0
+SliderLayer._list = nil
+SliderLayer._listSize = nil
 
-	local function moveList()
-		local offset = distance * layer.curIndex + layer.list:getPositionX()
-        layer.list:stopAllActions()
-        layer.list:runAction(
-            cc.MoveTo:create(math.abs(offset) / velocity,
-                cc.p(-distance * layer.curIndex, layer.list:getPositionY()))
-        )
-	end
+SliderLayer._oldMouseX = 0
+SliderLayer._curMouseX = 0
+SliderLayer._deltaMouseX = 0
 
-	function layer:slideToPre()
-		self.curIndex = self.curIndex - 1
-		moveList()
-	end
+function SliderLayer:ctor()
+	self._velocity = 2000
+	self._total = 0
+	self._curIndex = 0
+	self._distance = 0
+	self._listSize = nil
 
-	function layer:slideToNext()
-		self.curIndex = self.curIndex + 1
-		moveList()
-	end
+	self._oldMouseX = 0
+	self._curMouseX = 0
+	self._deltaMouseX = 0
 
-	function layer:slideToCur()
-		moveList()
-	end
-
-	local oldMouseX = 0
-	local curMouseX = 0
-	local deltaMouseX = 0
-	local function onTouchBegan(touch, event)
-		if layer:isVisible() then
-			oldMouseX = touch:getLocation().x
-			return true
-		end
-		return false
-	end
-
-	local function onTouchMoved(touch, event)
-		deltaMouseX = touch:getDelta().x
-		local x, y = layer.list:getPosition()
-		layer.list:setPosition(cc.p(x + deltaMouseX, y))
-	end
-
-	local function onTouchEnded(touch, event)
-		curMouseX = touch:getLocation().x
-		local delta = curMouseX - oldMouseX
-		if delta >= 50 and layer.curIndex > 0 then
-            layer:slideToPre()
-        elseif delta <= -50 and layer.curIndex < layer.total - 1 then
-            layer:slideToNext()
-        elseif delta ~= 0 then
-            layer:slideToCur()
+	self:registerScriptHandler(function(tag)
+        if tag == "enter" then
+            self:onEnter()
         end
-	end
-
-	local listener = cc.EventListenerTouchOneByOne:create()
-	listener:registerScriptHandler(onTouchBegan, cc.Handler.EVENT_TOUCH_BEGAN)
-	listener:registerScriptHandler(onTouchMoved, cc.Handler.EVENT_TOUCH_MOVED)
-	listener:registerScriptHandler(onTouchEnded, cc.Handler.EVENT_TOUCH_ENDED)
-
-	local eventDispatcher = layer:getEventDispatcher()
-	eventDispatcher:addEventListenerWithSceneGraphPriority(listener, layer)
-
-	return layer
+    end)
 end
 
-function initSelectSlideLayer(layer, size)
-	rect = cc.rect(center.x - size.width / 2,
-				   center.y - size.height / 2,
-				   size.width, size.height)
-
-	local oldMouseX = 0
-	local curMouseX = 0
-	local function onTouchBegan(touch, event)
-		oldMouseX = touch:getLocation().x
-		return cc.rectContainsPoint(rect, touch:getLocation())
-	end
-
-	local function onTouchEnded(touch, event)
-		curMouseX = touch:getLocation().x
-		local delta = curMouseX - oldMouseX
-		if math.abs(delta) <= 30 then
-			onSelected()
-		end
-	end
-
+function SliderLayer:onEnter()
 	local listener = cc.EventListenerTouchOneByOne:create()
-	listener:registerScriptHandler(onTouchBegan, cc.Handler.EVENT_TOUCH_BEGAN)
-	listener:registerScriptHandler(onTouchEnded, cc.Handler.EVENT_TOUCH_ENDED)
+	listener:registerScriptHandler(function(touch, event) return self:onTouchBegan(touch, event) end, cc.Handler.EVENT_TOUCH_BEGAN)
+	listener:registerScriptHandler(function(touch, event) self:onTouchMoved(touch, event) end, cc.Handler.EVENT_TOUCH_MOVED)
+	listener:registerScriptHandler(function(touch, event) self:onTouchEnded(touch, event) end, cc.Handler.EVENT_TOUCH_ENDED)
 
-	local eventDispatcher = layer:getEventDispatcher()
-	eventDispatcher:addEventListenerWithSceneGraphPriority(listener, layer)
+	local eventDispatcher = self:getEventDispatcher()
+	eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self)
+end
+
+function SliderLayer:initWithArray(array, distance)
+	self._total = #array
+	self._distance = distance
+	self._listSize = array[1]:getContentSize()
+
+	self._list = cc.Layer:create()
+	for i, obj in ipairs(array) do
+		local x, y = obj:getPosition()
+        obj:setPosition(cc.p(x + distance * (i - 1), y))
+        self._list:addChild(obj, 1, i - 1)
+	end
+	self:addChild(self._list)
+end
+
+function SliderLayer:moveList()
+	local offset = self._distance * self._curIndex + self._list:getPositionX()
+    self._list:stopAllActions()
+    self._list:runAction(
+        cc.MoveTo:create(math.abs(offset) / self._velocity,
+            cc.p(-self._distance * self._curIndex, self._list:getPositionY()))
+    )
+end
+
+function SliderLayer:slideToPre()
+	self._curIndex = self._curIndex - 1
+	self:moveList()
+end
+
+function SliderLayer:slideToNext()
+	self._curIndex = self._curIndex + 1
+	self:moveList()
+end
+
+function SliderLayer:slideToCur()
+	self:moveList()
+end
+
+function SliderLayer:onTouchBegan(touch, event)
+	if self:isVisible() then
+		self._oldMouseX = touch:getLocation().x
+		return true
+	end
+	return false
+end
+
+function SliderLayer:onTouchMoved(touch, event)
+	self._deltaMouseX = touch:getDelta().x
+	local x, y = self._list:getPosition()
+	self._list:setPosition(cc.p(x + self._deltaMouseX, y))
+end
+
+function SliderLayer:onTouchEnded(touch, event)
+	self._curMouseX = touch:getLocation().x
+	local delta = self._curMouseX - self._oldMouseX
+	if delta >= 50 and self._curIndex > 0 then
+        self:slideToPre()
+    elseif delta <= -50 and self._curIndex < self._total - 1 then
+        self:slideToNext()
+    elseif delta ~= 0 then
+        self:slideToCur()
+    end
+end
+
+SelectSlideLayer = class("SelectSlideLayer", function()
+	return SliderLayer.new()
+end)
+
+SelectSlideLayer._rect = nil
+
+function SelectSlideLayer:ctor()
+	self._rect = nil
+end
+
+function SelectSlideLayer:initWithArray(array, distance)
+	SliderLayer.initWithArray(self, array, distance)
+	self._rect = cc.rect(center.x - self._listSize.width / 2,
+				    center.y - self._listSize.height / 2,
+				    self._listSize.width, self._listSize.height)
+end
+
+function SelectSlideLayer:onTouchEnded(touch, event)
+	SliderLayer.onTouchEnded(self, touch, event)
+	self._curMouseX = touch:getLocation().x
+	local delta = self._curMouseX - self._oldMouseX
+	if math.abs(delta) <= 30 and cc.rectContainsPoint(self._rect, touch:getLocation()) then
+		self:onSelected()
+	end
 end

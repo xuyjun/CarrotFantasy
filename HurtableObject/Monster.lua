@@ -36,7 +36,7 @@ function Monster:born()
 end
 
 function Monster:die()
-    self.super.die(self)
+    HurtableObject.die(self)
 
     local parent = self:getParent()
     local air = cc.Sprite:create()
@@ -47,7 +47,7 @@ function Monster:die()
     air:setPosition(self:getPosition())
     parent:addChild(air, 15)
 
-    self._dataModel:decreaseMonster()
+    self._dataModel:removeMonster(self)
     self:removeFromParent(true)
 end
 
@@ -80,7 +80,7 @@ function Monster:moveToNextPoint()
 end
 
 function Monster:checkPoint()
-	if self._pointIndex + 1 == self._dataModel:getPathLenght() then
+	if self._pointIndex + 1 == self._dataModel:getPathLength() then
 		self:attackLB()
 	else
 		self:moveToNextPoint()

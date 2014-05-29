@@ -161,6 +161,5 @@ function createWelcomeLayer()
     end
 
     layer:scheduleUpdateWithPriorityLua(update, 0)
-
     return layer
 end

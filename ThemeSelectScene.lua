@@ -1,4 +1,9 @@
-local function createThemeSelectLayer()
+ThemeSelectLayer = class("ThemeSelectLayer", function()
+    return SelectSlideLayer.new()
+end)
+
+function ThemeSelectLayer:ctor()
+    self._velocity = 4000
     local array = {}
     for i = 1, 3 do
         local theme = cc.Sprite:createWithSpriteFrameName(string.format("theme_pack0%d.png", i))
@@ -32,35 +37,28 @@ local function createThemeSelectLayer()
         array[#array + 1] = theme
     end
 
-	local layer = createSliderLayer(array, winSize.width)
+	self:initWithArray(array, winSize.width)
+end
 
-	function onSelected()
-        local index = layer.curIndex + 1
-        local theme = nil
-        if index == 1 then
-            theme = ThemeData.Skyline
-        elseif index == 2 then
-            theme = ThemeData.Jungle
-        elseif index == 3 then
-            theme = ThemeData.Desert
-        end
+function ThemeSelectLayer:onSelected()
+    local index = self._curIndex + 1
+    local theme = nil
+    if index == 1 then
+        theme = ThemeData.Skyline
+    elseif index == 2 then
+        theme = ThemeData.Jungle
+    elseif index == 3 then
+        theme = ThemeData.Desert
+    end
 
-        local layer = createStageSelectLayer(theme)
-        local scene = createStageSelectScene()
-        scene:addChild(layer)
-        cc.Director:getInstance():pushScene(scene)    
-	end
-
-	initSelectSlideLayer(layer, layer.listSize)
-	velocity = 4000
-
-	return layer
+    local scene = createStageSelectScene(theme)
+    cc.Director:getInstance():pushScene(scene)    
 end
 
 function createThemeSelectScene()
 	local scene = createSelectScene()
 
-    local slideLayer = createThemeSelectLayer()
+    local slideLayer = ThemeSelectLayer.new()
     scene:addChild(slideLayer, 10)
 
     local homeNormal = cc.Sprite:createWithSpriteFrameName("theme_home_normal.png")
@@ -83,8 +81,8 @@ function createThemeSelectScene()
     menu:addChild(rightBtn)
 
     function scene:updateLRBtn()
-    	local index = slideLayer.curIndex
-        local len = slideLayer.total
+    	local index = slideLayer._curIndex
+        local len = slideLayer._total
         if index <= 0 then
             leftBtn:setVisible(false)
             rightBtn:setVisible(true)

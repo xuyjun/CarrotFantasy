@@ -29,22 +29,11 @@ function initArray(row, col, value)
     return array
 end
 
-function getTowerTypeByMark(mark)
-    local ttype = nil
-    if     mark == "1T" then ttype = TowersType.Bottle
-    elseif mark == "2T" then ttype = TowersType.Shit
-    elseif mark == "3T" then ttype = TowersType.Fan
-    elseif mark == "4T" then ttype = TowersType.Star
-    elseif mark == "5T" then ttype = TowersType.Ball
-    end
-    return ttype
-end
-
-function monsterData(_number, _hp, _type)
+function monsterData(_number, _hp, _name)
     local t = {
         NUMBER = _number,
         HP = _hp,
-        TYPE = _type
+        NAME = _name
     }
     return t
 end

@@ -1,11 +1,4 @@
-rectContainsRect = (rect1, rect2) ->
-	result = true
-	result = result and rect1.x < rect2.x
-	result = result and rect1.x + rect1.width > rect2.x + rect.width
-	result = result and rect1.y < rect2.y
-	result = result and rect1.y + rect1.height > rect2.y + rect.height
-	return result
-
+require "DrawPrimitives"
 export QuadTree = _G["class"] "QuadTree"
 
 with QuadTree
@@ -47,14 +40,61 @@ QuadTree.subdivive = =>
 	@_nodes[QUadTree.BL] = QuadTree.new (cc.rect x, y, width, height), depth
 	@_nodes[QUadTree.BR] = QuadTree.new (cc.rect x + width, y, width, height), depth
 
-QuadTree.findIndex = (rect) =>
-	-- TODO
+QuadTree.getIndex = (rect) =>
 	top = rect.y > @_rect.y + @_rect.height / 2
+	bottom = rect.y + rect.height < @_rect.y
+	left = rect.x + rect.width < @_rect.x
 	right = rect.x > @_rect.x + @_rect.width / 2
 	if top
-		if right then QuadTree.TR
-		else QuadTree.TL
+		if left then QuadTree.TL
+		elseif right then QuadTree.TR
+	elseif bottom
+		if left then QuadTree.BL
+		elseif right then QuadTree.BR
 	else
-		if right then QuadTree.BR
-		else QuadTree.BL
-	(-1)
+		-1
+
+QuadTree.insert = (obj) =>
+	rect = obj\getBoundingBox!
+	if #@_nodes != 0
+		index = @\getIndex rect
+		if index != -1
+			@_nodes[index]\insert rect
+		else
+			@_stuckObjects[#@_stuckObjects + 1] = obj
+		return
+
+	@_objects[#@_objects + 1] = obj
+	if #@_objects > @_maxObjects and @_depth < @_maxDepth
+		@\subdivive!
+		for obj in *@_objects do @\insert obj
+		@_objects = {}
+
+QuadTree.retrieve = (rect) =>
+	out = {}
+	if #@_nodes != 0
+		index = @\getIndex rect
+		if index != -1
+			for obj in *@_nodes[index]\retrieve rect
+				out[#out + 1] = obj
+		else
+			for node in *@_nodes
+				if cc.rectIntersectsRect node._rect, rect
+					for obj in *node\retrieve rect
+						out[#out + 1] = obj
+
+	for obj in *@_stuckObjects do out[#out + 1] = obj
+	for obj in *@_objects do out[#out + 1] = obj
+	out
+
+QuadTree.debugDraw = =>
+	{:x, :y, :width, :height} = @_rect
+	if #@_nodes != 0		
+		hw = width / 2
+		hh = height / 2
+		ccDrawRect (cc.p x, y), (cc.p x + hw, y + hh)
+		ccDrawRect (cc.p x + hw, y), (cc.p x + width, y + hh)
+		ccDrawRect (cc.p x, y + hh), (cc.p x + hw, y + height)
+		ccDrawRect (cc.p x + hw, y + hh), (cc.p x + width, y + height)
+	else
+		ccDrawRect (cc.p x, y), (cc.p x + width, y + height)

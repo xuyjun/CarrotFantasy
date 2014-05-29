@@ -12,8 +12,9 @@ StageModel._waves = {}
 StageModel._grid = {}
 
 StageModel._towers = {}
-StageModel._monstersCount = 0
+StageModel._monsters = {}
 StageModel._objectsCount = 0
+StageModel._monsterTree = nil
 
 StageModel._observers = {}
 
@@ -42,8 +43,9 @@ function StageModel:clear()
 	self._grid = initArray(MAX_ROW, MAX_COL, GRID_BAN)
 
 	self._towers = {}
-	self._monstersCount = 0
+	self._monsters = {}
 	self._objectsCount = 0
+	self._monsterTree = QuadTree.new(cc.rect(0, 0, winSize.width, winSize.height), 1)
 
 	self._observers = {}
 end
@@ -105,17 +107,27 @@ function StageModel:getTowers()
 	return self._towers
 end
 
-function StageModel:decreaseMonster()
-	assert(self._monstersCount > 0, "monstersCount must be greater than 0!")
-
-	self._monstersCount = self._monstersCount - 1
-	if self._monstersCount <= 0 then
+function StageModel:removeMonster(monster)
+	for i, m in ipairs(self._monsters) do
+		if m == monster then
+			table.remove(self._monsters, i)
+			break
+		end
+	end
+	if #self._monsters == 0 then
 		self:notifyObserver("monster")
 	end
 end
 
+function StageModel:updateTree()
+	self._monsterTree:clear()
+	for i, m in ipairs(self._monsters) do
+		self._monsterTree:insert(m)
+	end
+end
+
 function StageModel:decreaseObject()
-	assert(self._objectsCount > 0, "objectsCount must be greater than 0!")
+	assert(self._objectsCount > 0, "objectsCount must be greater than 0")
 
 	self._objectsCount = self._objectsCount - 1
 	if self._objectsCount <= 0 then
@@ -123,7 +135,7 @@ function StageModel:decreaseObject()
 	end
 end
 
-function StageModel:getPathLenght(index)
+function StageModel:getPathLength(index)
 	return #self._paths
 end
 
@@ -146,7 +158,9 @@ end
 
 function StageModel:notifyObserver(msg)
 	for i, observer in ipairs(self._observers) do
-		observer:updateDataMsg(msg)
+		if observer and observer.updateDataMsg then
+			observer:updateDataMsg(msg)
+		end
 	end
 end
 
@@ -226,9 +240,13 @@ function StageModel:runWithData(stageData)
 
 	self:parseTMXFile(stageData.TMX_FILE)
 
+	-- for i, wave in ipairs(stageData.WAVES) do
+
 	self:notifyObserver("money")
 
-	local len = #self._paths
-	self._stageLayer:initPathLabel(self._paths[1], self._paths[len - 1], self._paths[len])
+	-- local len = #self._paths
+	-- self._stageLayer:initPathLabel(self._paths[1], self._paths[len - 1], self._paths[len])
+	self._stageLayer:initPathLabel()
+	createGo(self._stageScene)
 	cc.Director:getInstance():runWithScene(self._stageScene)
 end

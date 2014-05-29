@@ -33,7 +33,7 @@ function GridObject:setAwardType(type)
 end
 
 function GridObject:die()
-	self.super.die(self)
+	HurtableObject.die(self)
 
 	if self._awardType ~= 0 then
 

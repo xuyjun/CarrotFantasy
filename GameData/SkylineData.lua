@@ -1,13 +1,25 @@
 SkylineData = {
     Stage1 = {
         MONEY = 99999,
-        PATH = 8,
+        CLEAR_AWARD = 1000,
         TMX_FILE = "res/Theme1/BG1/BGPath.tmx",
         TOTAL_WAVE = 15,
         WAVES = {
-            {monsterData(10, 10, 1)},
-            {monsterData(10, 15, 2)},
-            {monsterData(10, 30, 1)}
+            {monsterData(10, 10, "land_star")},
+            {monsterData(10, 15, "land_star")},
+            {monsterData(10, 30, "land_star")},
+            {monsterData(10, 30, "land_star")},
+            {monsterData(10, 30, "land_star")},
+            {monsterData(10, 30, "land_star")},
+            {monsterData(10, 30, "land_star")},
+            {monsterData(10, 30, "land_star")},
+            {monsterData(10, 30, "land_star")},
+            {monsterData(10, 30, "land_star")},
+            {monsterData(10, 30, "land_star")},
+            {monsterData(10, 30, "land_star")},
+            {monsterData(10, 30, "land_star")},
+            {monsterData(10, 30, "land_star")},
+            {monsterData(10, 30, "land_star")}
         }
     },
     Stage2 = {

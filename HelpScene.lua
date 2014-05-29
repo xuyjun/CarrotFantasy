@@ -1,4 +1,10 @@
-local function createHelpLayer()
+HelpLayer = class("HelpLayer", function()
+    return SliderLayer.new()
+end)
+
+HelpLayer._label = nil
+
+function HelpLayer:ctor()
     local tipArray = {}
     for i = 1, 4 do
         local tip = cc.Sprite:createWithSpriteFrameName(string.format("tips_%d.png", i))
@@ -12,38 +18,34 @@ local function createHelpLayer()
 
         tipArray[#tipArray + 1] = tip
     end  
-	local layer = createSliderLayer(tipArray, winSize.width)
+    self:initWithArray(tipArray, winSize.width)
 
     local bottom = cc.Sprite:createWithSpriteFrameName("bottom.png")
     bottom:setPosition(cc.p(winSize.width / 2, 50))
-    layer:addChild(bottom)
+    self:addChild(bottom)
 
     local label = cc.LabelAtlas:_create("1/4", s_bottom_num, 16, 30, string.byte("."))
     label:setPosition(cc.p(winSize.width / 2, 55))
     label:setAnchorPoint(cc.p(0.5, 0.5))
-    layer:addChild(label)
+    self:addChild(label)
 
-    local function onTouchBegan(touch, event)
-        return layer:isVisible()
-    end
-
-    local function onTouchEnded(touch, event)
-    	local index = layer.curIndex + 1
-        local string = index .. "/4"
-        label:setString(string)
-    end
-
-    local listener = cc.EventListenerTouchOneByOne:create()
-	listener:registerScriptHandler(onTouchBegan, cc.Handler.EVENT_TOUCH_BEGAN)
-	listener:registerScriptHandler(onTouchEnded, cc.Handler.EVENT_TOUCH_ENDED)
-
-	local eventDispatcher = layer:getEventDispatcher()
-	eventDispatcher:addEventListenerWithSceneGraphPriority(listener, layer)
-
-    return layer
+    self._label = label
 end
 
-local function createTowerLayer()
+function HelpLayer:onTouchEnded(touch, event)
+    SliderLayer.onTouchEnded(self, touch, event)
+    local index = self._curIndex + 1
+    local string = index .. "/4"
+    self._label:setString(string)
+end
+
+TowerLayer = class("TowerLayer", function()
+    return SliderLayer.new()
+end)
+
+TowerLayer._label = nil
+
+function TowerLayer:ctor()
     local tipArray = {}
     for i = 1, 13 do
         local num = i > 9 and ("" .. i) or ("0" .. i)
@@ -58,34 +60,25 @@ local function createTowerLayer()
 
         tipArray[#tipArray + 1] = tower
     end
-    local layer = createSliderLayer(tipArray, winSize.width)
+    self:initWithArray(tipArray, winSize.width)
 
     local bottom = cc.Sprite:createWithSpriteFrameName("bottom.png")
     bottom:setPosition(cc.p(winSize.width / 2, 50))
-    layer:addChild(bottom)
+    self:addChild(bottom)
 
     local label = cc.LabelAtlas:_create("1/13", s_bottom_num, 16, 30, string.byte("."))
     label:setPosition(cc.p(winSize.width / 2, 55))
     label:setAnchorPoint(cc.p(0.5, 0.5))
-    layer:addChild(label)
+    self:addChild(label)
 
-    local function onTouchBegan(touch, event)
-        return layer:isVisible()
-    end
+    self._label = label
+end
 
-    local function onTouchEnded(touch, event)
-    	local index = layer.curIndex + 1
-        local string = index .. "/13"
-        label:setString(string)
-    end
-
-    local listener = cc.EventListenerTouchOneByOne:create()
-	listener:registerScriptHandler(onTouchBegan, cc.Handler.EVENT_TOUCH_BEGAN)
-	listener:registerScriptHandler(onTouchEnded, cc.Handler.EVENT_TOUCH_ENDED)
-	local eventDispatcher = layer:getEventDispatcher()
-	eventDispatcher:addEventListenerWithSceneGraphPriority(listener, layer)
-
-    return layer
+function TowerLayer:onTouchEnded(touch, event)
+    SliderLayer.onTouchEnded(self, touch, event)
+    local index = self._curIndex + 1
+    local string = index .. "/13"
+    self._label:setString(string)
 end
 
 local function createMonsterLayer()
@@ -109,14 +102,14 @@ function createHelpScene()
     bg:setPosition(center)
     scene:addChild(bg)
 	
-    local helpLayer = createHelpLayer()
+    local helpLayer = HelpLayer.new()
     scene:addChild(helpLayer)
 
     local monsterLayer = createMonsterLayer()
     monsterLayer:setVisible(false)
     scene:addChild(monsterLayer)
 
-    local towerLayer = createTowerLayer()
+    local towerLayer = TowerLayer.new()
     towerLayer:setVisible(false)
     scene:addChild(towerLayer)
 

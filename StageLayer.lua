@@ -45,25 +45,17 @@ function StageLayer:ctor()
     local carrot = Carrot.new()
     carrot:setPosition(cc.p(-1000, -1000))
     self:addChild(carrot, 15)
-    local carrotBase = cc.Sprite:createWithSpriteFrameName("hlb0.png")
-    carrotBase:setPosition(cc.p(-1000, -1000))
-    self:addChild(carrotBase, 14)
 
     local lifeLabel = cc.Sprite:createWithSpriteFrameName("BossHP10.png")
     lifeLabel:setBlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
     lifeLabel:setPosition(cc.p(-1000, -1000))
     self:addChild(lifeLabel, 15)
 
-    local startLabel = cc.Sprite:createWithSpriteFrameName("start01.png")
-    startLabel:setBlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
-    startLabel:setPosition(cc.p(-1000, -1000))
-    self:addChild(startLabel, 15)
-
-    local test = cc.Sprite:createWithSpriteFrameName("MonsterHP01.png")
+    local test = cc.Sprite:createWithSpriteFrameName("countdown_12.png")
     test:setPosition(cc.p(400, 400))
     self:addChild(test)
-    test = cc.Sprite:createWithSpriteFrameName("MonsterHP02.png")
-    test:setPosition(cc.p(400, 400))
+    test = cc.Sprite:createWithSpriteFrameName("countdown_13.png")
+    test:setPosition(cc.p(500, 400))
     self:addChild(test)
 
     self._carrot = carrot
@@ -173,6 +165,8 @@ function StageLayer:ctor()
         end
     end
     self:registerScriptHandler(onNodeEvent)
+
+    -- self:initPathLabel()
 end
 
 function StageLayer:updateDataMsg(msg)
@@ -185,14 +179,27 @@ function StageLayer:updateDataMsg(msg)
     end
 end
 
-function StageLayer:initPathLabel(startPos, pos, labelPos)
+function StageLayer:initPathLabel()
+    local model = self._dataModel
+    local pathLen  = model:getPathLength()
+    local startPos = model:getPathByIndex(1)
+    local pos = model:getPathByIndex(pathLen - 1)
+    local labelPos = model:getPathByIndex(pathLen)
+
     local posGrid = posToGrid(pos)
     posGrid.row = posGrid.row - 1
     local labelGrid = posToGrid(labelPos)
     labelGrid.row = labelGrid.row - 1
     self._carrot:initGrid(posGrid, labelGrid)
     self._carrot:setPosition(pos.x + GRID_WIDTH / 2, pos.y - 50)
-    --self._carrotBase:setPosition(pos.x + GRID_WIDTH / 2, pos.y - 50)
     self._lifeLabel:setPosition(labelPos.x + GRID_WIDTH / 2, labelPos.y)
-    --startLabel:setPosition(startPos.x + GRID_WIDTH / 2, startPos.y)
+
+    local carrotBase = cc.Sprite:createWithSpriteFrameName("hlb0.png")
+    carrotBase:setPosition(pos.x + GRID_WIDTH / 2, pos.y - 50)
+    self:addChild(carrotBase, 14)
+
+    local startLabel = cc.Sprite:createWithSpriteFrameName("start01.png")
+    startLabel:setBlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+    startLabel:setPosition(startPos.x + GRID_WIDTH / 2, startPos.y)
+    self:addChild(startLabel, 15)
 end

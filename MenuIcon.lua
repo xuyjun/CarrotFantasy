@@ -25,6 +25,7 @@ function MenuIcon:ctor()
 	
 	self._dataModel = StageModel:getInstance()
 	self._dataModel:addObserver(self)
+	self:updateUI()
 end
 
 function MenuIcon:canWork()
@@ -74,7 +75,13 @@ TowersIcon.__index = TowersIcon
 TowersIcon._mark = nil
 
 function TowersIcon:ctor(mark)
-	local ttype = getTowerTypeByMark(mark)
+	local ttype = nil
+    if     mark == "1T" then ttype = TowersType.Bottle
+    elseif mark == "2T" then ttype = TowersType.Shit
+    elseif mark == "3T" then ttype = TowersType.Fan
+    elseif mark == "4T" then ttype = TowersType.Star
+    elseif mark == "5T" then ttype = TowersType.Ball
+    end
 	self._mark = mark
 
 	local frame = cc.SpriteFrameCache:getInstance():getSpriteFrame(ttype.NORMAL)

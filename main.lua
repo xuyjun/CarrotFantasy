@@ -28,6 +28,8 @@ require "src/Towers/Tower"
 require "src/Towers/SkylineTowers"
 require "src/StageModel"
 require "src/Carrot"
+require "src/QuadTree"
+require "src/CountDown"
 
 require "src/HurtableObject/HPObject"
 require "src/HurtableObject/HurtableObject"
@@ -44,9 +46,9 @@ local function main()
     collectgarbage("setstepmul", 5000)
 
 
-    --local scene = cc.Scene:create()
-    --scene:addChild(createWelcomeLayer())
-    --cc.Director:getInstance():runWithScene(createTestScene())
+    -- local scene = cc.Scene:create()
+    -- scene:addChild(createWelcomeLayer())
+    -- cc.Director:getInstance():runWithScene(scene)
     StageModel:getInstance():runWithData(SkylineData.Stage1)
 end
 

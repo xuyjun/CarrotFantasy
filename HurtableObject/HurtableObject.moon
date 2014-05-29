@@ -2,15 +2,20 @@ export HurtableObject = _G["class"] "HurtableObject", -> cc.Sprite\create!
 
 with HurtableObject
 	.__index = HurtableObject
+	._isDead = false
 	._dataModel = nil
 	._hpObject = nil
 	._money = 0
 
 HurtableObject.ctor = (hp, money) =>
+	@_isDead = false
 	@_hpObject = HPObject.new hp
     @\addChild @_hpObject, 1
 	@_money = money
 	@_dataModel = StageModel\getInstance!
+
+HurtableObject.isDead = =>
+	@_isDead
 
 HurtableObject.hurt = (hp) =>
 	with @_hpObject
@@ -19,6 +24,7 @@ HurtableObject.hurt = (hp) =>
 		if \isEmpty! then @\die!
 
 HurtableObject.die = =>
+	@_isDead = true
 	@_dataModel\setMoney @_dataModel\getMoney! + @_money
 
 	x, y = @\getPosition!
